@@ -11,4 +11,6 @@ int main(int argc, char *argv[]){
         sleep(1);
         printf("WORKER PID:%d PPID:%d Iteration:%d after sleeping\n", pid, ppid, i);
     }
+
+    return 0;
 }
