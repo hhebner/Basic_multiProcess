@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,16 +9,20 @@ void help(){
 
 
 int main(int argc, char *argv[]){
-    int children, iterations, simulations, opt;
+    int children = 0, iterations = 0, simulations = 0, opt;
+    int  active_workers = 0, total_workers_launched = 0;
     char iter_to_string[3];
 
-    while ((opt = getopt(argc, argv, "hn:t:")) != -1){
+    while ((opt = getopt(argc, argv, "hn:s:t:")) != -1){
         switch(opt) {
             case 'h':
                help();
                exit(0);
             case 'n':
                 children = atoi(optarg);
+                break;
+            case 's':
+                simulations = atoi(optarg);
                 break;
             case 't':
                 iterations = atoi(optarg);
@@ -32,20 +35,29 @@ int main(int argc, char *argv[]){
 
    sprintf(iter_to_string,"%d", iterations);
 
-   for (int i = 0; i < children; i++){
-          pid_t pid = fork();
+   while (total_workers_launched < children || active_workers > 0) {
+           if (active_workers < simulations && total_workers_launched < children){
+                pid_t fork_pid = fork();
+                if (fork_pid == 0) {
+                        execlp("./worker", "worker", iter_to_string, NULL);
+                        perror("execlp has failed");
+                        exit(1);
+                } else if (fork_pid > 0) {
+                       total_workers_launched++;
+                       active_workers++;
+                } else {
+                       perror("fork has failed");
+                       exit(1);
+                }
+           }
 
-         if (pid == 0){
-                execlp("./worker", "worker", iter_to_string, NULL);
-                perror("execlp");
-                exit(1);
-         }
+           pid_t wait_pid = waitpid(-1, NULL, WNOHANG);
+           if (wait_pid > 0) {
+                   active_workers--;
+           }
    }
 
-   for (int i = 0; i < children; i++){
-           wait(0);
-   }
 
-   printf("All workers are done\n");
+   printf("All workers have finished\n");
    return 0;
 }
