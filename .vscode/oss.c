@@ -1,3 +1,4 @@
+//Henry Hebner project 1 9/14/2023
 #include <unistd.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]){
     }
    //This is where we take the value from iterations and store it as a string in iter_to_string 
    sprintf(iter_to_string,"%d", iterations); 
-   
+
    /*This is where all the logic for running the processes happens. We start with a while loop that 
      will continue to execute as long as the arguments below are kept. This makes sense becasue 
      children is holding the input for our -n command which dictates how many children/workers
